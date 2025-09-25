@@ -1,0 +1,11 @@
+-- AlterTable
+ALTER TABLE "Lead" ADD COLUMN "creditScore" INTEGER;
+ALTER TABLE "Lead" ADD COLUMN "downPayment" REAL;
+ALTER TABLE "Lead" ADD COLUMN "gdsRatio" REAL;
+ALTER TABLE "Lead" ADD COLUMN "interestRate" REAL;
+ALTER TABLE "Lead" ADD COLUMN "loanAmount" REAL;
+ALTER TABLE "Lead" ADD COLUMN "monthlyDebts" REAL;
+ALTER TABLE "Lead" ADD COLUMN "monthlyIncome" REAL;
+ALTER TABLE "Lead" ADD COLUMN "propertyValue" REAL;
+ALTER TABLE "Lead" ADD COLUMN "tdsRatio" REAL;
+ALTER TABLE "Lead" ADD COLUMN "termYears" INTEGER DEFAULT 25;

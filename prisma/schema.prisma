@@ -1,0 +1,208 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum LeadStage {
+  NEW
+  CONTACTED
+  PREQUAL
+  DOCS_REQUESTED
+  DOCS_RECEIVED
+  PACKAGED
+  SUBMITTED
+  APPROVED
+  FUNDED
+  LOST
+}
+
+enum LeadType {
+  PURCHASE
+  REFINANCE
+  RENEWAL
+  EQUITY_LINE
+  OTHER
+}
+
+model Lead {
+  id           String     @id @default(cuid())
+  firstName    String
+  lastName     String
+  email        String?
+  phone        String?
+  source       String?
+  tags         String     @default("[]") // JSON array as string
+  stage        LeadStage  @default(NEW)
+  leadType     LeadType   @default(PURCHASE)
+  nextActionAt DateTime?
+
+  // Financial Information
+  propertyValue        Float?
+  downPayment         Float?
+  loanAmount          Float?
+  interestRate        Float?
+  termYears           Int?      @default(25)
+  monthlyIncome       Float?
+  monthlyDebts        Float?
+  creditScore         Int?
+  gdsRatio           Float?
+  tdsRatio           Float?
+
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  tasks        Task[]
+  notes        Note[]
+  emails       EmailMessage[]
+  checklists   Checklist[]
+  documents    Document[]
+
+  @@index([stage, nextActionAt])
+  @@index([email])
+  @@index([phone])
+}
+
+enum TaskStatus {
+  OPEN
+  DONE
+  CANCELED
+}
+
+enum TaskType {
+  CALL
+  EMAIL
+  DOCS_CHASE
+  OTHER
+}
+
+model Task {
+  id        String    @id @default(cuid())
+  lead      Lead      @relation(fields: [leadId], references: [id])
+  leadId    String
+  title     String
+  type      TaskType  @default(OTHER)
+  dueAt     DateTime?
+  status    TaskStatus @default(OPEN)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([leadId, status, dueAt])
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  lead      Lead     @relation(fields: [leadId], references: [id])
+  leadId    String
+  body      String
+  pinned    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([leadId, createdAt])
+}
+
+enum EmailStatus {
+  QUEUED
+  SENT
+  FAILED
+}
+
+model EmailMessage {
+  id        String      @id @default(cuid())
+  lead      Lead        @relation(fields: [leadId], references: [id])
+  leadId    String
+  to        String
+  subject   String
+  body      String
+  status    EmailStatus @default(QUEUED)
+  sentAt    DateTime?
+  createdAt DateTime    @default(now())
+
+  @@index([leadId, createdAt])
+}
+
+model ChecklistTemplate {
+  id        String @id @default(cuid())
+  name      String
+  // e.g., "salaried", "self_employed", "rental"
+  persona   String
+  items     ChecklistItemTemplate[]
+  createdAt DateTime @default(now())
+}
+
+model ChecklistItemTemplate {
+  id          String             @id @default(cuid())
+  template    ChecklistTemplate  @relation(fields: [templateId], references: [id])
+  templateId  String
+  label       String
+  required    Boolean @default(true)
+  sortOrder   Int     @default(0)
+}
+
+enum ChecklistStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETE
+}
+
+enum ChecklistItemStatus {
+  PENDING
+  RECEIVED
+  WAIVED
+}
+
+model Checklist {
+  id        String          @id @default(cuid())
+  lead      Lead            @relation(fields: [leadId], references: [id])
+  leadId    String
+  title     String
+  status    ChecklistStatus @default(OPEN)
+  items     ChecklistItem[]
+  createdAt DateTime        @default(now())
+}
+
+model ChecklistItem {
+  id         String              @id @default(cuid())
+  checklist  Checklist           @relation(fields: [checklistId], references: [id])
+  checklistId String
+  label      String
+  required   Boolean             @default(true)
+  status     ChecklistItemStatus @default(PENDING)
+  file       FileObject?         @relation(fields: [fileId], references: [id])
+  fileId     String?             @unique
+  sortOrder  Int                 @default(0)
+}
+
+model Document {
+  id        String    @id @default(cuid())
+  lead      Lead      @relation(fields: [leadId], references: [id])
+  leadId    String
+  kind      String
+  status    String    @default("pending")
+  file      FileObject? @relation(fields: [fileId], references: [id])
+  fileId    String?    @unique
+  createdAt DateTime  @default(now())
+}
+
+model FileObject {
+  id        String   @id @default(cuid())
+  url       String
+  key       String?
+  size      Int?
+  sha256    String?
+  createdAt DateTime @default(now())
+
+  checklistItem ChecklistItem?
+  document      Document?
+}
