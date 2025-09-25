@@ -8,7 +8,7 @@ import { PlusIcon, XMarkIcon, DocumentTextIcon } from '@heroicons/react/24/outli
 interface ChecklistTemplate {
   id: string
   name: string
-  leadType: 'PURCHASE' | 'REFINANCE' | 'RENEWAL' | 'EQUITY_LINE' | 'OTHER'
+  leadType: 'PURCHASE' | 'REFINANCE' | 'OTHER'
   _count: {
     items: number
   }
@@ -16,7 +16,7 @@ interface ChecklistTemplate {
 
 interface CreateChecklistFormProps {
   leadId: string
-  leadType: 'PURCHASE' | 'REFINANCE' | 'RENEWAL' | 'EQUITY_LINE' | 'OTHER'
+  leadType: 'PURCHASE' | 'REFINANCE' | 'OTHER'
   onChecklistCreated?: () => void
 }
 

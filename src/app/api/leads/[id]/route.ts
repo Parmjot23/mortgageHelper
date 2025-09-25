@@ -57,7 +57,7 @@ const updateLeadSchema = z.object({
   email: z.string().email().optional().or(z.literal('')),
   phone: z.string().optional(),
   source: z.string().optional(),
-  leadType: z.enum(['PURCHASE', 'REFINANCE', 'RENEWAL', 'EQUITY_LINE', 'OTHER']).optional(),
+  leadType: z.enum(['PURCHASE', 'REFINANCE', 'OTHER']).optional(),
   applicationStatus: z.enum(['NOT_STARTED', 'IN_PROGRESS', 'CONDITIONAL_APPROVED', 'APPROVED']).optional(),
   propertyValue: z.number().optional(),
   downPayment: z.number().optional(),

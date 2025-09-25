@@ -152,8 +152,6 @@ export default function NewLeadPage() {
                 >
                   <option value="PURCHASE">Purchase</option>
                   <option value="REFINANCE">Refinance</option>
-                  <option value="RENEWAL">Renewal</option>
-                  <option value="EQUITY_LINE">Equity Line</option>
                   <option value="OTHER">Other</option>
                 </select>
               </div>

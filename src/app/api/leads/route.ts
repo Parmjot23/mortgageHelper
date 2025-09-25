@@ -8,7 +8,7 @@ const createLeadSchema = z.object({
   email: z.string().email().optional().or(z.literal('')),
   phone: z.string().optional(),
   source: z.string().optional(),
-  leadType: z.enum(['PURCHASE', 'REFINANCE', 'RENEWAL', 'EQUITY_LINE', 'OTHER']).optional().default('PURCHASE'),
+  leadType: z.enum(['PURCHASE', 'REFINANCE', 'OTHER']).optional().default('PURCHASE'),
   applicationStatus: z.enum(['NOT_STARTED', 'IN_PROGRESS', 'CONDITIONAL_APPROVED', 'APPROVED']).optional().default('NOT_STARTED'),
 })
 

@@ -31,8 +31,6 @@ enum LeadStage {
 enum LeadType {
   PURCHASE
   REFINANCE
-  RENEWAL
-  EQUITY_LINE
   OTHER
 }
 

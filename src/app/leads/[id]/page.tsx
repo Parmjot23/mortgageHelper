@@ -63,7 +63,7 @@ interface Lead {
   phone: string | null
   source: string | null
   stage: LeadStage
-  leadType: 'PURCHASE' | 'REFINANCE' | 'RENEWAL' | 'EQUITY_LINE' | 'OTHER'
+  leadType: 'PURCHASE' | 'REFINANCE' | 'OTHER'
   applicationStatus: 'NOT_STARTED' | 'IN_PROGRESS' | 'CONDITIONAL_APPROVED' | 'APPROVED'
   nextActionAt: string | null
   propertyValue?: number
@@ -356,8 +356,6 @@ export default function LeadDetailPage({
                 >
                   <option value="PURCHASE">Purchase</option>
                   <option value="REFINANCE">Refinance</option>
-                  <option value="RENEWAL">Renewal</option>
-                  <option value="EQUITY_LINE">Equity Line</option>
                   <option value="OTHER">Other</option>
                 </select>
               ) : (
