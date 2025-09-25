@@ -30,7 +30,7 @@ export async function POST(
 
     const note = await prisma.note.create({
       data: {
-        leadId: params.id,
+        leadId: id,
         body: validatedData.body,
         pinned: validatedData.pinned,
       },

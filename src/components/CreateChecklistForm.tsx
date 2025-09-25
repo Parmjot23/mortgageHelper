@@ -8,7 +8,7 @@ import { PlusIcon, XMarkIcon, DocumentTextIcon } from '@heroicons/react/24/outli
 interface ChecklistTemplate {
   id: string
   name: string
-  persona: string
+  leadType: 'PURCHASE' | 'REFINANCE' | 'RENEWAL' | 'EQUITY_LINE' | 'OTHER'
   _count: {
     items: number
   }
@@ -16,10 +16,11 @@ interface ChecklistTemplate {
 
 interface CreateChecklistFormProps {
   leadId: string
+  leadType: 'PURCHASE' | 'REFINANCE' | 'RENEWAL' | 'EQUITY_LINE' | 'OTHER'
   onChecklistCreated?: () => void
 }
 
-export default function CreateChecklistForm({ leadId, onChecklistCreated }: CreateChecklistFormProps) {
+export default function CreateChecklistForm({ leadId, leadType, onChecklistCreated }: CreateChecklistFormProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [templates, setTemplates] = useState<ChecklistTemplate[]>([])
   const [selectedTemplate, setSelectedTemplate] = useState('')
@@ -40,6 +41,11 @@ export default function CreateChecklistForm({ leadId, onChecklistCreated }: Crea
       if (response.ok) {
         const data = await response.json()
         setTemplates(data)
+        // Auto-select the template that matches the lead type
+        const matchingTemplate = data.find((template: ChecklistTemplate) => template.leadType === leadType)
+        if (matchingTemplate) {
+          setSelectedTemplate(matchingTemplate.id)
+        }
       }
     } catch (error) {
       console.error('Failed to load templates:', error)
@@ -120,21 +126,25 @@ export default function CreateChecklistForm({ leadId, onChecklistCreated }: Crea
             <>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Select Template
+                  Selected Template
                 </label>
-                <select
-                  value={selectedTemplate}
-                  onChange={(e) => setSelectedTemplate(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  required
-                >
-                  <option value="">Choose a template...</option>
-                  {templates.map((template) => (
-                    <option key={template.id} value={template.id}>
-                      {template.name} ({template._count.items} items)
-                    </option>
-                  ))}
-                </select>
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                  {selectedTemplate ? (
+                    (() => {
+                      const template = templates.find(t => t.id === selectedTemplate)
+                      return template ? (
+                        <div>
+                          <div className="font-medium text-blue-900">{template.name}</div>
+                          <div className="text-sm text-blue-700">{template._count.items} items</div>
+                        </div>
+                      ) : (
+                        <div className="text-gray-500">No template selected</div>
+                      )
+                    })()
+                  ) : (
+                    <div className="text-gray-500">No matching template found for {leadType}</div>
+                  )}
+                </div>
               </div>
 
               <div>

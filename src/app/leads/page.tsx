@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { PlusIcon, MagnifyingGlassIcon, FunnelIcon, UserGroupIcon, Squares2X2Icon, ListBulletIcon, DocumentCheckIcon, CurrencyDollarIcon, CalculatorIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, MagnifyingGlassIcon, FunnelIcon, UserGroupIcon, Squares2X2Icon, ListBulletIcon, DocumentCheckIcon, CurrencyDollarIcon, CalculatorIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
@@ -35,6 +35,20 @@ const stageLabels: Record<LeadStage, string> = {
   LOST: 'Lost'
 }
 
+const applicationStatusColors: Record<string, string> = {
+  NOT_STARTED: 'bg-gray-100 text-gray-800',
+  IN_PROGRESS: 'bg-blue-100 text-blue-800',
+  CONDITIONAL_APPROVED: 'bg-yellow-100 text-yellow-800',
+  APPROVED: 'bg-green-100 text-green-800'
+}
+
+const applicationStatusLabels: Record<string, string> = {
+  NOT_STARTED: 'Not Started',
+  IN_PROGRESS: 'In Progress',
+  CONDITIONAL_APPROVED: 'Cond. Approved',
+  APPROVED: 'Approved'
+}
+
 export default function LeadsPage() {
   const [leads, setLeads] = useState([])
   const [loading, setLoading] = useState(true)
@@ -45,7 +59,15 @@ export default function LeadsPage() {
   useEffect(() => {
     const fetchLeads = async () => {
       try {
-        const response = await fetch('/api/leads?include=tasks,checklists,notes')
+        const params = new URLSearchParams()
+        params.set('include', 'tasks,checklists,notes')
+
+        const status = searchParams.get('status')
+        if (status) {
+          params.set('status', status)
+        }
+
+        const response = await fetch(`/api/leads?${params.toString()}`)
         if (!response.ok) {
           throw new Error('Failed to fetch leads')
         }
@@ -59,7 +81,7 @@ export default function LeadsPage() {
     }
 
     fetchLeads()
-  }, [])
+  }, [searchParams])
 
   if (loading) {
     return (
@@ -77,13 +99,44 @@ export default function LeadsPage() {
     )
   }
 
+  const getStatusDisplay = (status: string | null) => {
+    const statusLabels: Record<string, string> = {
+      NOT_STARTED: 'Not Started',
+      IN_PROGRESS: 'In Progress',
+      CONDITIONAL_APPROVED: 'Conditional Approved',
+      APPROVED: 'Approved'
+    }
+    return status ? statusLabels[status] || status : null
+  }
+
+  const statusFilter = searchParams.get('status')
+  const statusDisplay = getStatusDisplay(statusFilter)
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Leads</h1>
-          <p className="text-gray-600">Manage your mortgage leads and track their progress</p>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Leads {statusDisplay && <span className="text-lg font-normal text-gray-600">- {statusDisplay}</span>}
+          </h1>
+          <p className="text-gray-600">
+            {statusDisplay
+              ? `Showing leads with application status: ${statusDisplay.toLowerCase()}`
+              : 'Manage your mortgage leads and track their progress'
+            }
+          </p>
+          {statusFilter && (
+            <div className="mt-2">
+              <Link
+                href="/leads"
+                className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-700 hover:bg-gray-200"
+              >
+                Clear Filter
+                <XMarkIcon className="h-4 w-4 ml-1" />
+              </Link>
+            </div>
+          )}
         </div>
         <Link href="/leads/new">
           <Button className="bg-blue-600 hover:bg-blue-700">
@@ -202,6 +255,9 @@ export default function LeadsPage() {
                         </span>
                         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                           {lead.leadType.replace('_', ' ')}
+                        </span>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${applicationStatusColors[lead.applicationStatus]}`}>
+                          {applicationStatusLabels[lead.applicationStatus]}
                         </span>
                       </div>
                     </div>

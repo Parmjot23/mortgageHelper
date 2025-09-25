@@ -36,6 +36,13 @@ enum LeadType {
   OTHER
 }
 
+enum ApplicationStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  CONDITIONAL_APPROVED
+  APPROVED
+}
+
 model Lead {
   id           String     @id @default(cuid())
   firstName    String
@@ -44,9 +51,10 @@ model Lead {
   phone        String?
   source       String?
   tags         String     @default("[]") // JSON array as string
-  stage        LeadStage  @default(NEW)
-  leadType     LeadType   @default(PURCHASE)
-  nextActionAt DateTime?
+  stage             LeadStage        @default(NEW)
+  leadType          LeadType         @default(PURCHASE)
+  applicationStatus ApplicationStatus @default(NOT_STARTED)
+  nextActionAt      DateTime?
 
   // Financial Information
   propertyValue        Float?
@@ -135,8 +143,7 @@ model EmailMessage {
 model ChecklistTemplate {
   id        String @id @default(cuid())
   name      String
-  // e.g., "salaried", "self_employed", "rental"
-  persona   String
+  leadType  LeadType // Link to application type
   items     ChecklistItemTemplate[]
   createdAt DateTime @default(now())
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CalculatorIcon, CurrencyDollarIcon, PercentBadgeIcon } from '@heroicons/react/24/outline'
@@ -28,6 +28,8 @@ export default function FinancialCalculator({ leadData, onDataChange }: Financia
     monthlyIncome: leadData.monthlyIncome || 0,
     monthlyDebts: leadData.monthlyDebts || 0,
   })
+
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null)
 
   const [calculations, setCalculations] = useState({
     monthlyPayment: 0,
@@ -77,6 +79,20 @@ export default function FinancialCalculator({ leadData, onDataChange }: Financia
     }
   }
 
+  // Debounced function to notify parent of changes
+  const debouncedDataChange = useCallback(() => {
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current)
+    }
+
+    debounceTimer.current = setTimeout(() => {
+      // Only send data if onDataChange is provided and we have valid data
+      if (onDataChange && Object.values(data).some(val => val !== 0 && val !== '')) {
+        onDataChange(data)
+      }
+    }, 1500) // Wait 1.5 seconds after user stops typing
+  }, [data, onDataChange])
+
   useEffect(() => {
     const results = calculateAll()
     setCalculations(results)
@@ -87,13 +103,24 @@ export default function FinancialCalculator({ leadData, onDataChange }: Financia
       setData(prev => ({ ...prev, loanAmount: calculatedLoan }))
     }
 
-    // Notify parent component of changes
-    onDataChange?.(data)
-  }, [data, onDataChange])
+    // Notify parent component of changes with debouncing
+    debouncedDataChange()
+  }, [data, debouncedDataChange])
+
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current)
+      }
+    }
+  }, [])
 
   const handleInputChange = (field: string, value: string) => {
     const numValue = parseFloat(value) || 0
-    setData(prev => ({ ...prev, [field]: numValue }))
+    // Ensure non-negative values for financial fields
+    const validatedValue = numValue < 0 ? 0 : numValue
+    setData(prev => ({ ...prev, [field]: validatedValue }))
   }
 
   const formatCurrency = (amount: number) => {

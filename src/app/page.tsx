@@ -1,19 +1,40 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { UserGroupIcon, ClipboardDocumentListIcon, ClockIcon } from '@heroicons/react/24/outline'
+import { UserGroupIcon, ClipboardDocumentListIcon, ClockIcon, ExclamationCircleIcon, CheckCircleIcon, XCircleIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 
 async function getDashboardStats() {
   try {
-    const [totalLeads, activeTasks, incompleteChecklists] = await Promise.all([
-      prisma.lead.count(),
+    const [applicationStats, activeTasks, incompleteChecklists] = await Promise.all([
+      // Get counts by application status
+      prisma.lead.groupBy({
+        by: ['applicationStatus'],
+        _count: {
+          applicationStatus: true,
+        },
+      }),
       prisma.task.count({ where: { status: 'OPEN' } }),
       prisma.checklist.count({ where: { status: { in: ['OPEN', 'IN_PROGRESS'] } } })
     ])
 
+    // Transform the grouped data into a more usable format
+    const statusCounts = {
+      NOT_STARTED: 0,
+      IN_PROGRESS: 0,
+      CONDITIONAL_APPROVED: 0,
+      APPROVED: 0,
+    }
+
+    applicationStats.forEach(stat => {
+      statusCounts[stat.applicationStatus as keyof typeof statusCounts] = stat._count.applicationStatus
+    })
+
+    const totalLeads = Object.values(statusCounts).reduce((sum, count) => sum + count, 0)
+
     return {
       totalLeads,
+      statusCounts,
       activeTasks,
       incompleteChecklists
     }
@@ -21,6 +42,12 @@ async function getDashboardStats() {
     console.error('Failed to fetch dashboard stats:', error)
     return {
       totalLeads: 0,
+      statusCounts: {
+        NOT_STARTED: 0,
+        IN_PROGRESS: 0,
+        CONDITIONAL_APPROVED: 0,
+        APPROVED: 0,
+      },
       activeTasks: 0,
       incompleteChecklists: 0
     }
@@ -30,27 +57,42 @@ async function getDashboardStats() {
 export default async function Dashboard() {
   const stats = await getDashboardStats()
 
-  const dashboardStats = [
+  const applicationStatusCards = [
     {
-      name: 'Total Leads',
-      value: stats.totalLeads.toString(),
-      icon: UserGroupIcon,
-      href: '/leads',
-      description: 'All mortgage leads'
+      name: 'Not Started',
+      value: stats.statusCounts.NOT_STARTED.toString(),
+      icon: QuestionMarkCircleIcon,
+      href: '/leads?status=NOT_STARTED',
+      description: 'Applications not yet started',
+      color: 'text-gray-500',
+      bgColor: 'bg-gray-50'
     },
     {
-      name: 'Active Tasks',
-      value: stats.activeTasks.toString(),
+      name: 'In Progress',
+      value: stats.statusCounts.IN_PROGRESS.toString(),
       icon: ClockIcon,
-      href: '/leads',
-      description: 'Tasks to complete'
+      href: '/leads?status=IN_PROGRESS',
+      description: 'Applications currently in progress',
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50'
     },
     {
-      name: 'Incomplete Checklists',
-      value: stats.incompleteChecklists.toString(),
-      icon: ClipboardDocumentListIcon,
-      href: '/leads',
-      description: 'Document checklists to complete'
+      name: 'Conditional Approved',
+      value: stats.statusCounts.CONDITIONAL_APPROVED.toString(),
+      icon: ExclamationCircleIcon,
+      href: '/leads?status=CONDITIONAL_APPROVED',
+      description: 'Applications conditionally approved',
+      color: 'text-yellow-600',
+      bgColor: 'bg-yellow-50'
+    },
+    {
+      name: 'Approved',
+      value: stats.statusCounts.APPROVED.toString(),
+      icon: CheckCircleIcon,
+      href: '/leads?status=APPROVED',
+      description: 'Applications fully approved',
+      color: 'text-green-600',
+      bgColor: 'bg-green-50'
     }
   ]
 
@@ -66,24 +108,66 @@ export default async function Dashboard() {
         <p className="text-gray-600">Welcome to your mortgage helper dashboard</p>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {dashboardStats.map((stat) => (
-          <Link key={stat.name} href={stat.href}>
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+      {/* Application Status Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {applicationStatusCards.map((status) => (
+          <Link key={status.name} href={status.href}>
+            <Card className={`${status.bgColor} hover:shadow-md transition-shadow cursor-pointer border-0`}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-gray-600">
-                  {stat.name}
+                  {status.name}
                 </CardTitle>
-                <stat.icon className="h-5 w-5 text-gray-400" />
+                <status.icon className={`h-5 w-5 ${status.color}`} />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
-                <p className="text-xs text-gray-500">{stat.description}</p>
+                <div className="text-2xl font-bold text-gray-900">{status.value}</div>
+                <p className="text-xs text-gray-500">{status.description}</p>
               </CardContent>
             </Card>
           </Link>
         ))}
+      </div>
+
+      {/* Summary Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">
+              Total Leads
+            </CardTitle>
+            <UserGroupIcon className="h-5 w-5 text-gray-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-gray-900">{stats.totalLeads}</div>
+            <p className="text-xs text-gray-500">All mortgage leads</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">
+              Active Tasks
+            </CardTitle>
+            <ClockIcon className="h-5 w-5 text-gray-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-gray-900">{stats.activeTasks}</div>
+            <p className="text-xs text-gray-500">Tasks to complete</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">
+              Incomplete Checklists
+            </CardTitle>
+            <ClipboardDocumentListIcon className="h-5 w-5 text-gray-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-gray-900">{stats.incompleteChecklists}</div>
+            <p className="text-xs text-gray-500">Document checklists to complete</p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Quick Actions */}
@@ -113,7 +197,7 @@ export default async function Dashboard() {
           <div className="text-center py-8 text-gray-500">
             <p>No recent activity yet.</p>
             <p className="text-sm">Start by adding your first lead!</p>
-          </div>
+        </div>
         </CardContent>
       </Card>
     </div>

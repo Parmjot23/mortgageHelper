@@ -52,6 +52,13 @@ export async function GET(
 }
 
 const updateLeadSchema = z.object({
+  firstName: z.string().min(1, 'First name is required').optional(),
+  lastName: z.string().min(1, 'Last name is required').optional(),
+  email: z.string().email().optional().or(z.literal('')),
+  phone: z.string().optional(),
+  source: z.string().optional(),
+  leadType: z.enum(['PURCHASE', 'REFINANCE', 'RENEWAL', 'EQUITY_LINE', 'OTHER']).optional(),
+  applicationStatus: z.enum(['NOT_STARTED', 'IN_PROGRESS', 'CONDITIONAL_APPROVED', 'APPROVED']).optional(),
   propertyValue: z.number().optional(),
   downPayment: z.number().optional(),
   loanAmount: z.number().optional(),

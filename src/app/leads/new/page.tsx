@@ -17,6 +17,7 @@ export default function NewLeadPage() {
     phone: '',
     source: '',
     leadType: 'PURCHASE',
+    applicationStatus: 'NOT_STARTED',
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -154,6 +155,24 @@ export default function NewLeadPage() {
                   <option value="RENEWAL">Renewal</option>
                   <option value="EQUITY_LINE">Equity Line</option>
                   <option value="OTHER">Other</option>
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="applicationStatus" className="block text-sm font-medium text-gray-700 mb-2">
+                  Application Status
+                </label>
+                <select
+                  id="applicationStatus"
+                  name="applicationStatus"
+                  value={formData.applicationStatus}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="NOT_STARTED">Not Started</option>
+                  <option value="IN_PROGRESS">In Progress</option>
+                  <option value="CONDITIONAL_APPROVED">Conditional Approved</option>
+                  <option value="APPROVED">Approved</option>
                 </select>
               </div>
 

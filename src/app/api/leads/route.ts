@@ -9,6 +9,7 @@ const createLeadSchema = z.object({
   phone: z.string().optional(),
   source: z.string().optional(),
   leadType: z.enum(['PURCHASE', 'REFINANCE', 'RENEWAL', 'EQUITY_LINE', 'OTHER']).optional().default('PURCHASE'),
+  applicationStatus: z.enum(['NOT_STARTED', 'IN_PROGRESS', 'CONDITIONAL_APPROVED', 'APPROVED']).optional().default('NOT_STARTED'),
 })
 
 export async function POST(request: NextRequest) {
@@ -24,6 +25,7 @@ export async function POST(request: NextRequest) {
         phone: validatedData.phone || null,
         source: validatedData.source || null,
         leadType: validatedData.leadType,
+        applicationStatus: validatedData.applicationStatus,
         stage: 'NEW',
       },
     })
@@ -49,8 +51,10 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const includeParam = searchParams.get('include')
+    const statusParam = searchParams.get('status')
 
     const includeOptions: any = {}
+    const whereOptions: any = {}
 
     if (includeParam) {
       const includes = includeParam.split(',')
@@ -76,8 +80,13 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    if (statusParam) {
+      whereOptions.applicationStatus = statusParam
+    }
+
     const leads = await prisma.lead.findMany({
       ...(Object.keys(includeOptions).length > 0 ? { include: includeOptions } : {}),
+      ...(Object.keys(whereOptions).length > 0 ? { where: whereOptions } : {}),
       orderBy: { updatedAt: 'desc' },
       take: 50,
     })
