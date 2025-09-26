@@ -15,7 +15,8 @@ export default function NewLeadPage() {
     lastName: '',
     email: '',
     phone: '',
-    source: '',
+    sourceType: 'OTHER',
+    referrer: '',
     leadType: 'PURCHASE',
     applicationStatus: 'NOT_STARTED',
   })
@@ -175,25 +176,37 @@ export default function NewLeadPage() {
               </div>
 
               <div>
-                <label htmlFor="source" className="block text-sm font-medium text-gray-700 mb-2">
-                  Lead Source
+                <label htmlFor="sourceType" className="block text-sm font-medium text-gray-700 mb-2">
+                  Source Type
                 </label>
                 <select
-                  id="source"
-                  name="source"
-                  value={formData.source}
+                  id="sourceType"
+                  name="sourceType"
+                  value={formData.sourceType}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
                 >
-                  <option value="">Select a source</option>
-                  <option value="Referral">Referral</option>
-                  <option value="Website">Website</option>
-                  <option value="Social Media">Social Media</option>
-                  <option value="Cold Call">Cold Call</option>
-                  <option value="Realtor">Realtor</option>
-                  <option value="Open House">Open House</option>
-                  <option value="Other">Other</option>
+                  <option value="BANK">Bank</option>
+                  <option value="ONLINE">Online</option>
+                  <option value="SELF_SOURCE">Self Source</option>
+                  <option value="OTHER">Other</option>
                 </select>
+              </div>
+
+              <div>
+                <label htmlFor="referrer" className="block text-sm font-medium text-gray-700 mb-2">
+                  Referrer Name
+                </label>
+                <input
+                  type="text"
+                  id="referrer"
+                  name="referrer"
+                  value={formData.referrer}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Enter referrer name (optional)"
+                />
               </div>
             </div>
 

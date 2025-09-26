@@ -34,6 +34,13 @@ enum LeadType {
   OTHER
 }
 
+enum SourceType {
+  BANK
+  ONLINE
+  SELF_SOURCE
+  OTHER
+}
+
 enum ApplicationStatus {
   NOT_STARTED
   IN_PROGRESS
@@ -47,7 +54,8 @@ model Lead {
   lastName     String
   email        String?
   phone        String?
-  source       String?
+  sourceType   SourceType @default(OTHER)
+  referrer     String?
   tags         String     @default("[]") // JSON array as string
   stage             LeadStage        @default(NEW)
   leadType          LeadType         @default(PURCHASE)

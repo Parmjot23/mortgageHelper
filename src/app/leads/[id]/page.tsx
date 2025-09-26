@@ -61,7 +61,8 @@ interface Lead {
   lastName: string
   email: string | null
   phone: string | null
-  source: string | null
+  sourceType: 'BANK' | 'ONLINE' | 'SELF_SOURCE' | 'OTHER'
+  referrer: string | null
   stage: LeadStage
   leadType: 'PURCHASE' | 'REFINANCE' | 'OTHER'
   applicationStatus: 'NOT_STARTED' | 'IN_PROGRESS' | 'CONDITIONAL_APPROVED' | 'APPROVED'
@@ -130,7 +131,8 @@ export default function LeadDetailPage({
     lastName: '',
     email: '',
     phone: '',
-    source: '',
+    sourceType: 'OTHER',
+    referrer: '',
     leadType: ''
   })
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false)
@@ -233,7 +235,8 @@ export default function LeadDetailPage({
       lastName: lead.lastName,
       email: lead.email || '',
       phone: lead.phone || '',
-      source: lead.source || '',
+      sourceType: lead.sourceType,
+      referrer: lead.referrer || '',
       leadType: lead.leadType
     })
     setIsEditingBasicInfo(true)
@@ -417,24 +420,28 @@ export default function LeadDetailPage({
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-500">Source:</span>
                   <select
-                    value={editedLeadData.source}
-                    onChange={(e) => setEditedLeadData(prev => ({ ...prev, source: e.target.value }))}
+                    value={editedLeadData.sourceType}
+                    onChange={(e) => setEditedLeadData(prev => ({ ...prev, sourceType: e.target.value as 'BANK' | 'ONLINE' | 'SELF_SOURCE' | 'OTHER' }))}
                     className="text-sm text-gray-500 border border-gray-300 rounded px-2 py-1"
                   >
-                    <option value="">Select a source</option>
-                    <option value="Referral">Referral</option>
-                    <option value="Website">Website</option>
-                    <option value="Social Media">Social Media</option>
-                    <option value="Cold Call">Cold Call</option>
-                    <option value="Realtor">Realtor</option>
-                    <option value="Open House">Open House</option>
-                    <option value="Other">Other</option>
+                    <option value="BANK">Bank</option>
+                    <option value="ONLINE">Online</option>
+                    <option value="SELF_SOURCE">Self Source</option>
+                    <option value="OTHER">Other</option>
                   </select>
+                  <input
+                    type="text"
+                    value={editedLeadData.referrer}
+                    onChange={(e) => setEditedLeadData(prev => ({ ...prev, referrer: e.target.value }))}
+                    placeholder="Referrer name (optional)"
+                    className="text-sm text-gray-500 border border-gray-300 rounded px-2 py-1"
+                  />
                 </div>
               ) : (
-                lead.source && (
-                  <span className="text-sm text-gray-500">Source: {lead.source}</span>
-                )
+                <span className="text-sm text-gray-500">
+                  Source: {lead.sourceType.replace('_', ' ')}
+                  {lead.referrer && ` - ${lead.referrer}`}
+                </span>
               )}
             </div>
           </div>
@@ -502,21 +509,27 @@ export default function LeadDetailPage({
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Lead Source</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Source Type</label>
                   <select
-                    value={editedLeadData.source}
-                    onChange={(e) => setEditedLeadData(prev => ({ ...prev, source: e.target.value }))}
+                    value={editedLeadData.sourceType}
+                    onChange={(e) => setEditedLeadData(prev => ({ ...prev, sourceType: e.target.value as 'BANK' | 'ONLINE' | 'SELF_SOURCE' | 'OTHER' }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
-                    <option value="">Select a source</option>
-                    <option value="Referral">Referral</option>
-                    <option value="Website">Website</option>
-                    <option value="Social Media">Social Media</option>
-                    <option value="Cold Call">Cold Call</option>
-                    <option value="Realtor">Realtor</option>
-                    <option value="Open House">Open House</option>
-                    <option value="Other">Other</option>
+                    <option value="BANK">Bank</option>
+                    <option value="ONLINE">Online</option>
+                    <option value="SELF_SOURCE">Self Source</option>
+                    <option value="OTHER">Other</option>
                   </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Referrer Name</label>
+                  <input
+                    type="text"
+                    value={editedLeadData.referrer}
+                    onChange={(e) => setEditedLeadData(prev => ({ ...prev, referrer: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter referrer name (optional)"
+                  />
                 </div>
               </>
             ) : (

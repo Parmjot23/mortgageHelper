@@ -385,7 +385,7 @@ export default function LeadsPage() {
                   <div className="text-xs text-gray-600 space-y-1 mb-3">
                     {lead.email && <div>📧 {lead.email}</div>}
                     {lead.phone && <div>📱 {lead.phone}</div>}
-                    {lead.source && <div>📍 {lead.source}</div>}
+                    <div>📍 {lead.sourceType.replace('_', ' ')}{lead.referrer && ` - ${lead.referrer}`}</div>
                   </div>
 
                   {/* Action Button */}
@@ -417,9 +417,7 @@ export default function LeadsPage() {
                         {lead.phone && (
                           <p className="text-sm text-gray-600">{lead.phone}</p>
                         )}
-                        {lead.source && (
-                          <p className="text-sm text-gray-500">Source: {lead.source}</p>
-                        )}
+                        <p className="text-sm text-gray-500">Source: {lead.sourceType.replace('_', ' ')}{lead.referrer && ` - ${lead.referrer}`}</p>
                       </div>
                     </div>
                   </div>
