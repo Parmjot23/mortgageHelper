@@ -101,3 +101,25 @@ export async function PATCH(
     )
   }
 }
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+
+    // Delete the lead (Prisma will handle cascading deletes for related records)
+    await prisma.lead.delete({
+      where: { id },
+    })
+
+    return NextResponse.json({ message: 'Lead deleted successfully' })
+  } catch (error) {
+    console.error('Failed to delete lead:', error)
+    return NextResponse.json(
+      { error: 'Failed to delete lead' },
+      { status: 500 }
+    )
+  }
+}

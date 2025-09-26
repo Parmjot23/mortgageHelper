@@ -3,7 +3,7 @@
 import { useState, useEffect, use } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeftIcon, PencilIcon, PhoneIcon, ClockIcon, DocumentTextIcon, PlusIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
+import { ArrowLeftIcon, PencilIcon, PhoneIcon, ClockIcon, DocumentTextIcon, PlusIcon, ChevronDownIcon, TrashIcon } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import AddNoteForm from '@/components/AddNoteForm'
 import AddTaskForm from '@/components/AddTaskForm'
@@ -133,6 +133,7 @@ export default function LeadDetailPage({
     source: '',
     leadType: ''
   })
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false)
 
   // Unwrap the params Promise
   const resolvedParams = use(params)
@@ -294,6 +295,28 @@ export default function LeadDetailPage({
     }
   }
 
+  const handleDeleteLead = async () => {
+    if (!lead) return
+
+    try {
+      const response = await fetch(`/api/leads/${leadId}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        // Redirect to leads list page
+        window.location.href = '/leads'
+      } else {
+        const errorData = await response.json()
+        console.error('Failed to delete lead:', errorData)
+        alert(`Failed to delete lead: ${errorData.error || 'Unknown error'}`)
+      }
+    } catch (error) {
+      console.error('Error deleting lead:', error)
+      alert('Network error while deleting lead. Please try again.')
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-64">
@@ -432,10 +455,20 @@ export default function LeadDetailPage({
                 </Button>
               </div>
             ) : (
-              <Button variant="outline" onClick={handleStartEdit}>
-                <PencilIcon className="h-4 w-4 mr-2" />
-                Edit
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={handleStartEdit}>
+                  <PencilIcon className="h-4 w-4 mr-2" />
+                  Edit
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowDeleteConfirmation(true)}
+                  className="text-red-600 border-red-300 hover:bg-red-50"
+                >
+                  <TrashIcon className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+              </div>
             )}
       </div>
 
@@ -678,6 +711,34 @@ export default function LeadDetailPage({
         }}
         onDataChange={handleFinancialDataChange}
       />
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirmation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Delete Lead
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete this lead? This action cannot be undone and will permanently remove all associated data including tasks, notes, checklists, and documents.
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteConfirmation(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleDeleteLead}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Delete Lead
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { PlusIcon, MagnifyingGlassIcon, FunnelIcon, UserGroupIcon, Squares2X2Icon, ListBulletIcon, DocumentCheckIcon, CurrencyDollarIcon, CalculatorIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, MagnifyingGlassIcon, FunnelIcon, UserGroupIcon, Squares2X2Icon, ListBulletIcon, DocumentCheckIcon, CurrencyDollarIcon, CalculatorIcon, XMarkIcon, TrashIcon } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
@@ -54,6 +54,7 @@ export default function LeadsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [viewMode, setViewMode] = useState<'compact' | 'detailed'>('detailed')
+  const [deleteLeadId, setDeleteLeadId] = useState<string | null>(null)
   const searchParams = useSearchParams()
 
   useEffect(() => {
@@ -82,6 +83,39 @@ export default function LeadsPage() {
 
     fetchLeads()
   }, [searchParams])
+
+  const handleDeleteLead = async (leadId: string) => {
+    try {
+      const response = await fetch(`/api/leads/${leadId}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        // Refresh the leads list
+        const params = new URLSearchParams()
+        params.set('include', 'tasks,checklists,notes')
+
+        const status = searchParams.get('status')
+        if (status) {
+          params.set('status', status)
+        }
+
+        const refreshResponse = await fetch(`/api/leads?${params.toString()}`)
+        if (refreshResponse.ok) {
+          const data = await refreshResponse.json()
+          setLeads(data)
+        }
+        setDeleteLeadId(null)
+      } else {
+        const errorData = await response.json()
+        console.error('Failed to delete lead:', errorData)
+        alert(`Failed to delete lead: ${errorData.error || 'Unknown error'}`)
+      }
+    } catch (error) {
+      console.error('Error deleting lead:', error)
+      alert('Network error while deleting lead. Please try again.')
+    }
+  }
 
   if (loading) {
     return (
@@ -261,6 +295,14 @@ export default function LeadsPage() {
                         </span>
                       </div>
                     </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setDeleteLeadId(lead.id)}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 p-1"
+                    >
+                      <TrashIcon className="h-4 w-4" />
+                    </Button>
                   </div>
 
                   {/* Financial Summary */}
@@ -386,11 +428,21 @@ export default function LeadsPage() {
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${stageColors[lead.stage as LeadStage]}`}>
                       {stageLabels[lead.stage as LeadStage]}
                     </span>
-                    <Link href={`/leads/${lead.id}`}>
-                      <Button variant="outline" size="sm">
-                        View Details
+                    <div className="flex items-center gap-2">
+                      <Link href={`/leads/${lead.id}`}>
+                        <Button variant="outline" size="sm">
+                          View Details
+                        </Button>
+                      </Link>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setDeleteLeadId(lead.id)}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 p-2"
+                      >
+                        <TrashIcon className="h-4 w-4" />
                       </Button>
-                    </Link>
+                    </div>
                   </div>
                 </div>
 
@@ -404,6 +456,34 @@ export default function LeadsPage() {
               </CardContent>
             </Card>
           ))}
+        </div>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {deleteLeadId && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Delete Lead
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete this lead? This action cannot be undone and will permanently remove all associated data including tasks, notes, checklists, and documents.
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setDeleteLeadId(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => handleDeleteLead(deleteLeadId)}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Delete Lead
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>
