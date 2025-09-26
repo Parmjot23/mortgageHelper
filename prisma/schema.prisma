@@ -95,7 +95,7 @@ enum TaskType {
 
 model Task {
   id        String    @id @default(cuid())
-  lead      Lead      @relation(fields: [leadId], references: [id])
+  lead      Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
   leadId    String
   title     String
   type      TaskType  @default(OTHER)
@@ -109,7 +109,7 @@ model Task {
 
 model Note {
   id        String   @id @default(cuid())
-  lead      Lead     @relation(fields: [leadId], references: [id])
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
   leadId    String
   body      String
   pinned    Boolean  @default(false)
@@ -126,7 +126,7 @@ enum EmailStatus {
 
 model EmailMessage {
   id        String      @id @default(cuid())
-  lead      Lead        @relation(fields: [leadId], references: [id])
+  lead      Lead        @relation(fields: [leadId], references: [id], onDelete: Cascade)
   leadId    String
   to        String
   subject   String
@@ -169,7 +169,7 @@ enum ChecklistItemStatus {
 
 model Checklist {
   id        String          @id @default(cuid())
-  lead      Lead            @relation(fields: [leadId], references: [id])
+  lead      Lead            @relation(fields: [leadId], references: [id], onDelete: Cascade)
   leadId    String
   title     String
   status    ChecklistStatus @default(OPEN)
@@ -179,7 +179,7 @@ model Checklist {
 
 model ChecklistItem {
   id         String              @id @default(cuid())
-  checklist  Checklist           @relation(fields: [checklistId], references: [id])
+  checklist  Checklist           @relation(fields: [checklistId], references: [id], onDelete: Cascade)
   checklistId String
   label      String
   required   Boolean             @default(true)
@@ -191,7 +191,7 @@ model ChecklistItem {
 
 model Document {
   id        String    @id @default(cuid())
-  lead      Lead      @relation(fields: [leadId], references: [id])
+  lead      Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
   leadId    String
   kind      String
   status    String    @default("pending")
