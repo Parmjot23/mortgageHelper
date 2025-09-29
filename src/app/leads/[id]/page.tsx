@@ -436,25 +436,44 @@ export default function LeadDetailPage({
                 )}
               </div>
               {isEditingBasicInfo ? (
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500">Source:</span>
-                  <select
-                    value={editedLeadData.sourceType}
-                    onChange={(e) => setEditedLeadData(prev => ({ ...prev, sourceType: e.target.value as 'BANK' | 'ONLINE' | 'SELF_SOURCE' | 'OTHER' }))}
-                    className="text-sm text-gray-500 border border-gray-300 rounded px-2 py-1"
-                  >
-                    <option value="BANK">Bank</option>
-                    <option value="ONLINE">Online</option>
-                    <option value="SELF_SOURCE">Self Source</option>
-                    <option value="OTHER">Other</option>
-                  </select>
-                  <input
-                    type="text"
-                    value={editedLeadData.referrer}
-                    onChange={(e) => setEditedLeadData(prev => ({ ...prev, referrer: e.target.value }))}
-                    placeholder="Referrer name (optional)"
-                    className="text-sm text-gray-500 border border-gray-300 rounded px-2 py-1"
-                  />
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-500">Source:</span>
+                    <select
+                      value={editedLeadData.sourceType}
+                      onChange={(e) => {
+                        const newSourceType = e.target.value as 'BANK' | 'ONLINE' | 'SELF_SOURCE' | 'OTHER'
+                        setEditedLeadData(prev => ({
+                          ...prev,
+                          sourceType: newSourceType,
+                          referrerId: newSourceType !== 'BANK' ? '' : prev.referrerId // Clear referrer if not bank
+                        }))
+                      }}
+                      className="text-sm text-gray-500 border border-gray-300 rounded px-2 py-1"
+                    >
+                      <option value="BANK">Bank</option>
+                      <option value="ONLINE">Online</option>
+                      <option value="SELF_SOURCE">Self Source</option>
+                      <option value="OTHER">Other</option>
+                    </select>
+                  </div>
+                  {editedLeadData.sourceType === 'BANK' && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-500">Bank Referrer:</span>
+                      <select
+                        value={editedLeadData.referrerId}
+                        onChange={(e) => setEditedLeadData(prev => ({ ...prev, referrerId: e.target.value }))}
+                        className="text-sm text-gray-500 border border-gray-300 rounded px-2 py-1"
+                      >
+                        <option value="">Select referrer (optional)</option>
+                        {referrers.map((referrer) => (
+                          <option key={referrer.id} value={referrer.id}>
+                            {referrer.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <span className="text-sm text-gray-500">
