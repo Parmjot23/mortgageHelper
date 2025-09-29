@@ -55,7 +55,8 @@ model Lead {
   email        String?
   phone        String?
   sourceType   SourceType @default(OTHER)
-  referrer     String?
+  referrerId   String?
+  referrer     Referrer?  @relation(fields: [referrerId], references: [id])
   tags         String     @default("[]") // JSON array as string
   stage             LeadStage        @default(NEW)
   leadType          LeadType         @default(PURCHASE)
@@ -206,6 +207,17 @@ model Document {
   file      FileObject? @relation(fields: [fileId], references: [id])
   fileId    String?    @unique
   createdAt DateTime  @default(now())
+}
+
+model Referrer {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations to leads
+  leads     Lead[]
 }
 
 model FileObject {

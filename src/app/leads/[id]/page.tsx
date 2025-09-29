@@ -49,7 +49,7 @@ const applicationStatusColors: Record<string, string> = {
 }
 
 const applicationStatusLabels: Record<string, string> = {
-  NOT_STARTED: 'Not Started',
+  NOT_STARTED: 'Not Contacted',
   IN_PROGRESS: 'In Progress',
   CONDITIONAL_APPROVED: 'Conditional Approved',
   APPROVED: 'Approved'
@@ -62,7 +62,12 @@ interface Lead {
   email: string | null
   phone: string | null
   sourceType: 'BANK' | 'ONLINE' | 'SELF_SOURCE' | 'OTHER'
-  referrer: string | null
+  referrerId: string | null
+  referrer: {
+    id: string
+    name: string
+    isActive: boolean
+  } | null
   stage: LeadStage
   leadType: 'PURCHASE' | 'REFINANCE' | 'OTHER'
   applicationStatus: 'NOT_STARTED' | 'IN_PROGRESS' | 'CONDITIONAL_APPROVED' | 'APPROVED'
@@ -132,10 +137,11 @@ export default function LeadDetailPage({
     email: '',
     phone: '',
     sourceType: 'OTHER',
-    referrer: '',
+    referrerId: '',
     leadType: ''
   })
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false)
+  const [referrers, setReferrers] = useState<Array<{ id: string; name: string; isActive: boolean }>>([])
 
   // Unwrap the params Promise
   const resolvedParams = use(params)
@@ -143,7 +149,20 @@ export default function LeadDetailPage({
 
   useEffect(() => {
     fetchLead()
+    fetchReferrers()
   }, [leadId])
+
+  const fetchReferrers = async () => {
+    try {
+      const response = await fetch('/api/referrers')
+      if (response.ok) {
+        const data = await response.json()
+        setReferrers(data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch referrers:', error)
+    }
+  }
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -236,7 +255,7 @@ export default function LeadDetailPage({
       email: lead.email || '',
       phone: lead.phone || '',
       sourceType: lead.sourceType,
-      referrer: lead.referrer || '',
+      referrerId: lead.referrerId || '',
       leadType: lead.leadType
     })
     setIsEditingBasicInfo(true)
@@ -440,7 +459,7 @@ export default function LeadDetailPage({
               ) : (
                 <span className="text-sm text-gray-500">
                   Source: {lead.sourceType.replace('_', ' ')}
-                  {lead.referrer && ` - ${lead.referrer}`}
+                  {lead.referrer && ` - ${lead.referrer.name}`}
                 </span>
               )}
             </div>
@@ -512,7 +531,14 @@ export default function LeadDetailPage({
                   <label className="block text-sm font-medium text-gray-700 mb-1">Source Type</label>
                   <select
                     value={editedLeadData.sourceType}
-                    onChange={(e) => setEditedLeadData(prev => ({ ...prev, sourceType: e.target.value as 'BANK' | 'ONLINE' | 'SELF_SOURCE' | 'OTHER' }))}
+                    onChange={(e) => {
+                      const newSourceType = e.target.value as 'BANK' | 'ONLINE' | 'SELF_SOURCE' | 'OTHER'
+                      setEditedLeadData(prev => ({
+                        ...prev,
+                        sourceType: newSourceType,
+                        referrerId: newSourceType !== 'BANK' ? '' : prev.referrerId // Clear referrer if not bank
+                      }))
+                    }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="BANK">Bank</option>
@@ -521,16 +547,23 @@ export default function LeadDetailPage({
                     <option value="OTHER">Other</option>
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Referrer Name</label>
-                  <input
-                    type="text"
-                    value={editedLeadData.referrer}
-                    onChange={(e) => setEditedLeadData(prev => ({ ...prev, referrer: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Enter referrer name (optional)"
-                  />
-                </div>
+                {editedLeadData.sourceType === 'BANK' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Bank Referrer</label>
+                    <select
+                      value={editedLeadData.referrerId}
+                      onChange={(e) => setEditedLeadData(prev => ({ ...prev, referrerId: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="">Select referrer (optional)</option>
+                      {referrers.map((referrer) => (
+                        <option key={referrer.id} value={referrer.id}>
+                          {referrer.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </>
             ) : (
               <>

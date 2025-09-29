@@ -8,7 +8,7 @@ const createLeadSchema = z.object({
   email: z.string().email().optional().or(z.literal('')),
   phone: z.string().optional(),
   sourceType: z.enum(['BANK', 'ONLINE', 'SELF_SOURCE', 'OTHER']).optional().default('OTHER'),
-  referrer: z.string().optional(),
+  referrerId: z.string().optional(),
   leadType: z.enum(['PURCHASE', 'REFINANCE', 'OTHER']).optional().default('PURCHASE'),
   applicationStatus: z.enum(['NOT_STARTED', 'IN_PROGRESS', 'CONDITIONAL_APPROVED', 'APPROVED']).optional().default('NOT_STARTED'),
 })
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
         email: validatedData.email || null,
         phone: validatedData.phone || null,
         sourceType: validatedData.sourceType,
-        referrer: validatedData.referrer || null,
+        referrerId: validatedData.referrerId || null,
         leadType: validatedData.leadType,
         applicationStatus: validatedData.applicationStatus,
         stage: 'NEW',
@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
     }
 
     const leads = await prisma.lead.findMany({
-      ...(Object.keys(includeOptions).length > 0 ? { include: includeOptions } : {}),
+      ...(Object.keys(includeOptions).length > 0 ? { include: { ...includeOptions, referrer: true } } : { include: { referrer: true } }),
       ...(Object.keys(whereOptions).length > 0 ? { where: whereOptions } : {}),
       orderBy: { updatedAt: 'desc' },
       take: 50,

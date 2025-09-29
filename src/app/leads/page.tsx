@@ -43,7 +43,7 @@ const applicationStatusColors: Record<string, string> = {
 }
 
 const applicationStatusLabels: Record<string, string> = {
-  NOT_STARTED: 'Not Started',
+  NOT_STARTED: 'Not Contacted',
   IN_PROGRESS: 'In Progress',
   CONDITIONAL_APPROVED: 'Cond. Approved',
   APPROVED: 'Approved'
@@ -385,7 +385,8 @@ export default function LeadsPage() {
                   <div className="text-xs text-gray-600 space-y-1 mb-3">
                     {lead.email && <div>📧 {lead.email}</div>}
                     {lead.phone && <div>📱 {lead.phone}</div>}
-                    <div>📍 {lead.sourceType.replace('_', ' ')}{lead.referrer && ` - ${lead.referrer}`}</div>
+                    <div>📍 {lead.sourceType.replace('_', ' ')}{lead.referrer && ` - ${lead.referrer.name}`}</div>
+                    <div>📅 Created: {new Date(lead.createdAt).toLocaleDateString()}</div>
                   </div>
 
                   {/* Action Button */}
@@ -417,7 +418,8 @@ export default function LeadsPage() {
                         {lead.phone && (
                           <p className="text-sm text-gray-600">{lead.phone}</p>
                         )}
-                        <p className="text-sm text-gray-500">Source: {lead.sourceType.replace('_', ' ')}{lead.referrer && ` - ${lead.referrer}`}</p>
+                        <p className="text-sm text-gray-500">Source: {lead.sourceType.replace('_', ' ')}{lead.referrer && ` - ${lead.referrer.name}`}</p>
+                        <p className="text-sm text-gray-500">Created: {new Date(lead.createdAt).toLocaleDateString()}</p>
                       </div>
                     </div>
                   </div>

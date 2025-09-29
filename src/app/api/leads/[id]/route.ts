@@ -11,6 +11,7 @@ export async function GET(
     const lead = await prisma.lead.findUnique({
       where: { id },
       include: {
+        referrer: true,
         tasks: {
           orderBy: { createdAt: 'desc' },
         },
@@ -57,7 +58,7 @@ const updateLeadSchema = z.object({
   email: z.string().email().optional().or(z.literal('')),
   phone: z.string().optional(),
   sourceType: z.enum(['BANK', 'ONLINE', 'SELF_SOURCE', 'OTHER']).optional(),
-  referrer: z.string().optional(),
+  referrerId: z.string().optional(),
   leadType: z.enum(['PURCHASE', 'REFINANCE', 'OTHER']).optional(),
   applicationStatus: z.enum(['NOT_STARTED', 'IN_PROGRESS', 'CONDITIONAL_APPROVED', 'APPROVED']).optional(),
   propertyValue: z.number().optional(),

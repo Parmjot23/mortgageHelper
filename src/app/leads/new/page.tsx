@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,16 +10,32 @@ import Link from 'next/link'
 export default function NewLeadPage() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [referrers, setReferrers] = useState<Array<{ id: string; name: string; isActive: boolean }>>([])
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
     phone: '',
     sourceType: 'OTHER',
-    referrer: '',
+    referrerId: '',
     leadType: 'PURCHASE',
     applicationStatus: 'NOT_STARTED',
   })
+
+  useEffect(() => {
+    const fetchReferrers = async () => {
+      try {
+        const response = await fetch('/api/referrers')
+        if (response.ok) {
+          const data = await response.json()
+          setReferrers(data)
+        }
+      } catch (error) {
+        console.error('Failed to fetch referrers:', error)
+      }
+    }
+    fetchReferrers()
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -183,7 +199,14 @@ export default function NewLeadPage() {
                   id="sourceType"
                   name="sourceType"
                   value={formData.sourceType}
-                  onChange={handleChange}
+                  onChange={(e) => {
+                    const newSourceType = e.target.value as 'BANK' | 'ONLINE' | 'SELF_SOURCE' | 'OTHER'
+                    setFormData(prev => ({
+                      ...prev,
+                      sourceType: newSourceType,
+                      referrerId: newSourceType !== 'BANK' ? '' : prev.referrerId // Clear referrer if not bank
+                    }))
+                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   required
                 >
@@ -194,20 +217,27 @@ export default function NewLeadPage() {
                 </select>
               </div>
 
-              <div>
-                <label htmlFor="referrer" className="block text-sm font-medium text-gray-700 mb-2">
-                  Referrer Name
-                </label>
-                <input
-                  type="text"
-                  id="referrer"
-                  name="referrer"
-                  value={formData.referrer}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter referrer name (optional)"
-                />
-              </div>
+              {formData.sourceType === 'BANK' && (
+                <div>
+                  <label htmlFor="referrerId" className="block text-sm font-medium text-gray-700 mb-2">
+                    Bank Referrer
+                  </label>
+                  <select
+                    id="referrerId"
+                    name="referrerId"
+                    value={formData.referrerId}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Select referrer (optional)</option>
+                    {referrers.map((referrer) => (
+                      <option key={referrer.id} value={referrer.id}>
+                        {referrer.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
 
             <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
