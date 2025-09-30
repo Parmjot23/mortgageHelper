@@ -20,7 +20,8 @@ async function getDashboardStats() {
 
     // Transform the grouped data into a more usable format
     const statusCounts = {
-      NOT_STARTED: 0,
+      NOT_CONTACTED: 0,
+      CONTACTED: 0,
       IN_PROGRESS: 0,
       CONDITIONAL_APPROVED: 0,
       APPROVED: 0,
@@ -43,7 +44,8 @@ async function getDashboardStats() {
     return {
       totalLeads: 0,
       statusCounts: {
-        NOT_STARTED: 0,
+        NOT_CONTACTED: 0,
+        CONTACTED: 0,
         IN_PROGRESS: 0,
         CONDITIONAL_APPROVED: 0,
         APPROVED: 0,
@@ -59,13 +61,22 @@ export default async function Dashboard() {
 
   const applicationStatusCards = [
     {
-      name: 'Not Started',
-      value: stats.statusCounts.NOT_STARTED.toString(),
+      name: 'Not Contacted',
+      value: stats.statusCounts.NOT_CONTACTED.toString(),
       icon: QuestionMarkCircleIcon,
-      href: '/leads?status=NOT_STARTED',
-      description: 'Applications not yet started',
+      href: '/leads?status=NOT_CONTACTED',
+      description: 'Leads not yet contacted',
       color: 'text-gray-500',
       bgColor: 'bg-gray-50'
+    },
+    {
+      name: 'Contacted',
+      value: stats.statusCounts.CONTACTED.toString(),
+      icon: UserGroupIcon,
+      href: '/leads?status=CONTACTED',
+      description: 'Leads that have been contacted',
+      color: 'text-indigo-600',
+      bgColor: 'bg-indigo-50'
     },
     {
       name: 'In Progress',
@@ -109,7 +120,7 @@ export default async function Dashboard() {
       </div>
 
       {/* Application Status Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         {applicationStatusCards.map((status) => (
           <Link key={status.name} href={status.href}>
             <Card className={`${status.bgColor} hover:shadow-md transition-shadow cursor-pointer border-0`}>
