@@ -8,13 +8,15 @@ import {
   UserGroupIcon,
   Bars3Icon,
   XMarkIcon,
-  BuildingOfficeIcon
+  BuildingOfficeIcon,
+  DocumentTextIcon
 } from '@heroicons/react/24/outline'
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: HomeIcon },
   { name: 'Leads', href: '/leads', icon: UserGroupIcon },
   { name: 'Referrers', href: '/referrers', icon: BuildingOfficeIcon },
+  { name: 'Checklist Templates', href: '/checklist-templates', icon: DocumentTextIcon },
 ]
 
 export default function Layout({ children }: { children: React.ReactNode }) {
