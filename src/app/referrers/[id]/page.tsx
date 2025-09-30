@@ -22,14 +22,16 @@ const stageColors: Record<LeadStage, string> = {
 }
 
 const applicationStatusColors: Record<string, string> = {
-  NOT_STARTED: 'bg-gray-100 text-gray-800',
+  NOT_CONTACTED: 'bg-gray-100 text-gray-800',
+  CONTACTED: 'bg-indigo-100 text-indigo-800',
   IN_PROGRESS: 'bg-blue-100 text-blue-800',
   CONDITIONAL_APPROVED: 'bg-yellow-100 text-yellow-800',
   APPROVED: 'bg-green-100 text-green-800'
 }
 
 const applicationStatusLabels: Record<string, string> = {
-  NOT_STARTED: 'Not Contacted',
+  NOT_CONTACTED: 'Not Contacted',
+  CONTACTED: 'Contacted',
   IN_PROGRESS: 'In Progress',
   CONDITIONAL_APPROVED: 'Cond. Approved',
   APPROVED: 'Approved'
@@ -43,7 +45,7 @@ interface Lead {
   phone: string | null
   sourceType: 'BANK' | 'ONLINE' | 'SELF_SOURCE' | 'OTHER'
   leadType: 'PURCHASE' | 'REFINANCE' | 'OTHER'
-  applicationStatus: 'NOT_STARTED' | 'IN_PROGRESS' | 'CONDITIONAL_APPROVED' | 'APPROVED'
+  applicationStatus: 'NOT_CONTACTED' | 'CONTACTED' | 'IN_PROGRESS' | 'CONDITIONAL_APPROVED' | 'APPROVED'
   stage: LeadStage
   createdAt: string
   updatedAt: string
@@ -200,7 +202,8 @@ export default function ReferrerDetailPage({
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="all">All Statuses</option>
-                  <option value="NOT_STARTED">Not Contacted</option>
+                  <option value="NOT_CONTACTED">Not Contacted</option>
+                  <option value="CONTACTED">Contacted</option>
                   <option value="IN_PROGRESS">In Progress</option>
                   <option value="CONDITIONAL_APPROVED">Conditional Approved</option>
                   <option value="APPROVED">Approved</option>

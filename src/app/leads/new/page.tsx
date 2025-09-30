@@ -19,7 +19,7 @@ export default function NewLeadPage() {
     sourceType: 'OTHER',
     referrerId: '',
     leadType: 'PURCHASE',
-    applicationStatus: 'NOT_STARTED',
+    applicationStatus: 'NOT_CONTACTED',
   })
 
   useEffect(() => {
@@ -184,7 +184,8 @@ export default function NewLeadPage() {
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="NOT_STARTED">Not Started</option>
+                  <option value="NOT_CONTACTED">Not Contacted</option>
+                  <option value="CONTACTED">Contacted</option>
                   <option value="IN_PROGRESS">In Progress</option>
                   <option value="CONDITIONAL_APPROVED">Conditional Approved</option>
                   <option value="APPROVED">Approved</option>

@@ -36,14 +36,16 @@ const stageLabels: Record<LeadStage, string> = {
 }
 
 const applicationStatusColors: Record<string, string> = {
-  NOT_STARTED: 'bg-gray-100 text-gray-800',
+  NOT_CONTACTED: 'bg-gray-100 text-gray-800',
+  CONTACTED: 'bg-indigo-100 text-indigo-800',
   IN_PROGRESS: 'bg-blue-100 text-blue-800',
   CONDITIONAL_APPROVED: 'bg-yellow-100 text-yellow-800',
   APPROVED: 'bg-green-100 text-green-800'
 }
 
 const applicationStatusLabels: Record<string, string> = {
-  NOT_STARTED: 'Not Contacted',
+  NOT_CONTACTED: 'Not Contacted',
+  CONTACTED: 'Contacted',
   IN_PROGRESS: 'In Progress',
   CONDITIONAL_APPROVED: 'Cond. Approved',
   APPROVED: 'Approved'
@@ -135,7 +137,8 @@ export default function LeadsPage() {
 
   const getStatusDisplay = (status: string | null) => {
     const statusLabels: Record<string, string> = {
-      NOT_STARTED: 'Not Started',
+      NOT_CONTACTED: 'Not Contacted',
+      CONTACTED: 'Contacted',
       IN_PROGRESS: 'In Progress',
       CONDITIONAL_APPROVED: 'Conditional Approved',
       APPROVED: 'Approved'

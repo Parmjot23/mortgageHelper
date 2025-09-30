@@ -60,7 +60,7 @@ const updateLeadSchema = z.object({
   sourceType: z.enum(['BANK', 'ONLINE', 'SELF_SOURCE', 'OTHER']).optional(),
   referrerId: z.string().optional(),
   leadType: z.enum(['PURCHASE', 'REFINANCE', 'OTHER']).optional(),
-  applicationStatus: z.enum(['NOT_STARTED', 'IN_PROGRESS', 'CONDITIONAL_APPROVED', 'APPROVED']).optional(),
+  applicationStatus: z.enum(['NOT_CONTACTED', 'CONTACTED', 'IN_PROGRESS', 'CONDITIONAL_APPROVED', 'APPROVED']).optional(),
   propertyValue: z.number().optional(),
   downPayment: z.number().optional(),
   loanAmount: z.number().optional(),

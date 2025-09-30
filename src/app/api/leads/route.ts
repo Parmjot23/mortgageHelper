@@ -10,7 +10,7 @@ const createLeadSchema = z.object({
   sourceType: z.enum(['BANK', 'ONLINE', 'SELF_SOURCE', 'OTHER']).optional().default('OTHER'),
   referrerId: z.string().optional(),
   leadType: z.enum(['PURCHASE', 'REFINANCE', 'OTHER']).optional().default('PURCHASE'),
-  applicationStatus: z.enum(['NOT_STARTED', 'IN_PROGRESS', 'CONDITIONAL_APPROVED', 'APPROVED']).optional().default('NOT_STARTED'),
+  applicationStatus: z.enum(['NOT_CONTACTED', 'CONTACTED', 'IN_PROGRESS', 'CONDITIONAL_APPROVED', 'APPROVED']).optional().default('NOT_CONTACTED'),
 })
 
 export async function POST(request: NextRequest) {

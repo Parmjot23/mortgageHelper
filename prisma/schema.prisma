@@ -42,7 +42,8 @@ enum SourceType {
 }
 
 enum ApplicationStatus {
-  NOT_STARTED
+  NOT_CONTACTED
+  CONTACTED
   IN_PROGRESS
   CONDITIONAL_APPROVED
   APPROVED
@@ -60,7 +61,7 @@ model Lead {
   tags         String     @default("[]") // JSON array as string
   stage             LeadStage        @default(NEW)
   leadType          LeadType         @default(PURCHASE)
-  applicationStatus ApplicationStatus @default(NOT_STARTED)
+  applicationStatus ApplicationStatus @default(NOT_CONTACTED)
   nextActionAt      DateTime?
 
   // Financial Information
