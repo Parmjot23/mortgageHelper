@@ -9,8 +9,11 @@ import {
   Bars3Icon,
   XMarkIcon,
   BuildingOfficeIcon,
-  DocumentTextIcon
+  DocumentTextIcon,
+  MicrophoneIcon
 } from '@heroicons/react/24/outline'
+import { Button } from "@/components/ui/button"
+import VoiceAssistant from './VoiceAssistant'
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: HomeIcon },
@@ -21,6 +24,7 @@ const navigation = [
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [voiceAssistantOpen, setVoiceAssistantOpen] = useState(false)
   const pathname = usePathname()
 
   return (
@@ -108,6 +112,25 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <main className="p-6">
           {children}
         </main>
+
+        {/* Voice Assistant Button */}
+        <Button
+          onClick={() => setVoiceAssistantOpen(true)}
+          className="fixed bottom-6 right-6 z-40 bg-blue-600 hover:bg-blue-700 rounded-full p-4 shadow-lg"
+          size="sm"
+        >
+          <MicrophoneIcon className="h-6 w-6" />
+        </Button>
+
+        {/* Voice Assistant */}
+        <VoiceAssistant
+          isOpen={voiceAssistantOpen}
+          onClose={() => setVoiceAssistantOpen(false)}
+          contextData={{
+            currentPage: pathname,
+            projectContext: 'Mortgage Helper Application - Full-stack Next.js app for managing mortgage leads, referrers, and checklist templates'
+          }}
+        />
       </div>
     </div>
   )
