@@ -13,15 +13,16 @@ const sendEmailSchema = z.object({
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const body = await request.json()
     const validatedData = sendEmailSchema.parse(body)
 
     // Verify lead exists
     const lead = await prisma.lead.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!lead) {
@@ -34,7 +35,7 @@ export async function POST(
     // Create email record in database
     const emailMessage = await prisma.emailMessage.create({
       data: {
-        leadId: params.id,
+        leadId: id,
         to: validatedData.to,
         subject: validatedData.subject,
         body: validatedData.body,
@@ -110,11 +111,12 @@ export async function POST(
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const emails = await prisma.emailMessage.findMany({
-      where: { leadId: params.id },
+      where: { leadId: id },
       orderBy: { createdAt: 'desc' },
     })
 
