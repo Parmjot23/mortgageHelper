@@ -4,26 +4,30 @@ import { useState, useEffect, useRef } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { MicrophoneIcon, SpeakerWaveIcon, XMarkIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline'
-import GoogleGenAI from '@google/genai'
+import OpenAI from 'openai'
 
-// Extend window interface for speech recognition
+// Extend window interface for Web Speech API
 declare global {
   interface Window {
     SpeechRecognition: typeof SpeechRecognition
     webkitSpeechRecognition: typeof SpeechRecognition
+    speechSynthesis: SpeechSynthesis
   }
 }
 
-// Initialize Gemini AI
-const getGeminiAI = () => {
-  const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY
-  if (!apiKey || apiKey === '') {
+// Initialize OpenAI client
+const getOpenAI = () => {
+  const apiKey = process.env.NEXT_PUBLIC_OPENAI_API_KEY
+  if (!apiKey || apiKey === 'your_openai_api_key_here') {
     console.warn(
-      'Gemini API key not found. Please set NEXT_PUBLIC_GEMINI_API_KEY in your .env file.'
+      'OpenAI API key not found. Please set NEXT_PUBLIC_OPENAI_API_KEY in your .env file.'
     )
     return null
   }
-  return new GoogleGenAI(apiKey)
+  return new OpenAI({
+    apiKey: apiKey,
+    dangerouslyAllowBrowser: true // Required for client-side usage
+  })
 }
 
 interface Message {
@@ -165,13 +169,13 @@ export default function VoiceAssistant({ isOpen, onClose, contextData }: VoiceAs
     setIsProcessing(true)
 
     try {
-      const gemini = getGeminiAI()
-      if (!gemini) {
+      const openai = getOpenAI()
+      if (!openai) {
         const errorMessage: Message = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
           content:
-            'Gemini API key not configured. Please set NEXT_PUBLIC_GEMINI_API_KEY in your .env file and restart the server.',
+            'OpenAI API key not configured. Please set NEXT_PUBLIC_OPENAI_API_KEY in your .env file and restart the server.',
           timestamp: new Date(),
         }
         setMessages(prev => [...prev, errorMessage])
@@ -180,8 +184,7 @@ export default function VoiceAssistant({ isOpen, onClose, contextData }: VoiceAs
       }
 
       // Create comprehensive context about the project
-      const projectContext = `
-You are an AI assistant for a Mortgage Helper application - a comprehensive full-stack Next.js application with Prisma database for mortgage lead management.
+      const projectContext = `You are an AI assistant for a Mortgage Helper application - a comprehensive full-stack Next.js application with Prisma database for mortgage lead management.
 
 ## APPLICATION FEATURES:
 - **Lead Management**: Create, edit, delete mortgage leads with complete financial information (property value, loan amount, interest rates, income, debts, credit scores, GDS/TDS ratios)
@@ -210,30 +213,25 @@ You are an AI assistant for a Mortgage Helper application - a comprehensive full
 - Add tasks and notes to leads
 - Generate reports and analytics
 
-Please provide specific, actionable guidance based on the current context and help the user efficiently manage their mortgage lead pipeline.
-      `
+Please provide specific, actionable guidance based on the current context and help the user efficiently manage their mortgage lead pipeline.`
 
-      const prompt = `${projectContext}
-
-## USER QUERY:
-${messageText}
-
-## RESPONSE GUIDELINES:
-- Be specific and actionable
-- Reference exact page names, button names, and workflows
-- Suggest concrete next steps
-- Explain mortgage-specific terms when relevant
-- Offer to help with specific tasks like creating leads, managing templates, etc.
-- If the user asks about functionality, explain how it works in this application
-- Keep responses conversational but professional
-
-Assistant: Respond helpfully to the user's query about the Mortgage Helper application.`
-
-      const response = await gemini.models.generateContent({
-        model: "gemini-1.5-flash-latest",
-        contents: prompt,
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini", // Use GPT-4o-mini for cost-effectiveness, or "gpt-4o" for better performance
+        messages: [
+          {
+            role: "system",
+            content: projectContext
+          },
+          {
+            role: "user",
+            content: messageText
+          }
+        ],
+        max_tokens: 1000,
+        temperature: 0.7,
       })
-      const aiResponse = response.text
+
+      const aiResponse = response.choices[0]?.message?.content || "Sorry, I couldn't generate a response."
 
       const assistantMessage: Message = {
         id: (Date.now() + 2).toString(),
@@ -250,7 +248,7 @@ Assistant: Respond helpfully to the user's query about the Mortgage Helper appli
       }
 
     } catch (error) {
-      console.error('Error calling Gemini API:', error)
+      console.error('Error calling OpenAI API:', error)
       const errorMessage: Message = {
         id: (Date.now() + 3).toString(),
         role: 'assistant',

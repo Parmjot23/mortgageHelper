@@ -7,7 +7,7 @@ A comprehensive full-stack Next.js application for managing mortgage leads, refe
 - **Lead Management**: Complete mortgage lead tracking with financial information, application status, and source tracking
 - **Referrer Management**: Track bank referrers who send leads (BANK source type only)
 - **Checklist Templates**: Manage document checklists organized by lead type (Purchase, Refinance, Other)
-- **Voice Assistant**: AI-powered voice assistant using Google Gemini for hands-free project assistance
+- **Voice Assistant**: AI-powered voice assistant using OpenAI GPT for hands-free project assistance
 - **Application Workflow**: 5-stage status tracking from initial contact to approval
 
 ## Tech Stack
@@ -15,7 +15,7 @@ A comprehensive full-stack Next.js application for managing mortgage leads, refe
 - **Frontend**: Next.js 15, React, TypeScript, Tailwind CSS
 - **Backend**: Next.js API Routes
 - **Database**: SQLite with Prisma ORM
-- **AI**: Google Gemini API for voice assistant
+- **AI**: OpenAI GPT API for voice assistant
 - **UI**: Custom components with Heroicons
 
 ## Getting Started
@@ -30,9 +30,9 @@ A comprehensive full-stack Next.js application for managing mortgage leads, refe
    cp .env.example .env
    ```
 
-   Add your Gemini API key:
+   Add your OpenAI API key:
    ```
-   GEMINI_API_KEY=your_gemini_api_key_here
+   NEXT_PUBLIC_OPENAI_API_KEY=your_openai_api_key_here
    ```
 
 3. **Set up the database**:
