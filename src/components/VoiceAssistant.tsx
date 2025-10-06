@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { MicrophoneIcon, SpeakerWaveIcon, XMarkIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline'
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import GoogleGenAI from '@google/genai'
 
 // Extend window interface for speech recognition
 declare global {
@@ -16,12 +16,14 @@ declare global {
 
 // Initialize Gemini AI
 const getGeminiAI = () => {
-  const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY
-  if (!apiKey) {
-    console.warn('Gemini API key not found. Please set GEMINI_API_KEY in your environment variables.')
+  const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY
+  if (!apiKey || apiKey === 'AIzaSyCnDeVcTWMHtzE45k0rX6zZcqVD9wqurjA') {
+    console.warn(
+      'Gemini API key not found. Please set NEXT_PUBLIC_GEMINI_API_KEY in your .env file.'
+    )
     return null
   }
-  return new GoogleGenerativeAI(apiKey)
+  return new GoogleGenAI(apiKey)
 }
 
 interface Message {
@@ -54,6 +56,7 @@ export default function VoiceAssistant({ isOpen, onClose, contextData }: VoiceAs
   ])
   const [currentInput, setCurrentInput] = useState('')
   const [isSpeaking, setIsSpeaking] = useState(false)
+  const [recognitionError, setRecognitionError] = useState<string | null>(null)
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
@@ -81,8 +84,13 @@ export default function VoiceAssistant({ isOpen, onClose, contextData }: VoiceAs
           setIsRecording(false)
         }
 
-        recognitionRef.current.onerror = (event) => {
-          console.error('Speech recognition error:', event.error)
+        recognitionRef.current.onerror = (event: any) => {
+          if (event.error === 'no-speech') {
+            setRecognitionError("I didn't hear anything. Please try speaking again.")
+          } else {
+            console.error('Speech recognition error:', event.error)
+            setRecognitionError(`An error occurred: ${event.error}`)
+          }
           setIsRecording(false)
         }
       }
@@ -108,6 +116,7 @@ export default function VoiceAssistant({ isOpen, onClose, contextData }: VoiceAs
     }
 
     try {
+      setRecognitionError(null) // Clear previous errors
       setIsRecording(true)
       recognitionRef.current.start()
     } catch (error) {
@@ -161,14 +170,14 @@ export default function VoiceAssistant({ isOpen, onClose, contextData }: VoiceAs
         const errorMessage: Message = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
-          content: 'Gemini API key not configured. Please set GEMINI_API_KEY in your environment variables.',
-          timestamp: new Date()
+          content:
+            'Gemini API key not configured. Please set NEXT_PUBLIC_GEMINI_API_KEY in your .env file and restart the server.',
+          timestamp: new Date(),
         }
         setMessages(prev => [...prev, errorMessage])
+        setIsProcessing(false)
         return
       }
-
-      const model = gemini.getGenerativeModel({ model: 'gemini-1.5-flash' })
 
       // Create comprehensive context about the project
       const projectContext = `
@@ -220,9 +229,11 @@ ${messageText}
 
 Assistant: Respond helpfully to the user's query about the Mortgage Helper application.`
 
-      const result = await model.generateContent(prompt)
-      const response = await result.response
-      const aiResponse = response.text()
+      const response = await gemini.models.generateContent({
+        model: "gemini-1.5-flash-latest",
+        contents: prompt,
+      })
+      const aiResponse = response.text
 
       const assistantMessage: Message = {
         id: (Date.now() + 2).toString(),
@@ -309,6 +320,14 @@ Assistant: Respond helpfully to the user's query about the Mortgage Helper appli
                 </div>
               </div>
             )}
+
+            {recognitionError && (
+              <div className="flex justify-center">
+                <div className="bg-red-100 text-red-700 px-4 py-2 rounded-lg text-sm">
+                  {recognitionError}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Input Controls */}
@@ -362,9 +381,9 @@ Assistant: Respond helpfully to the user's query about the Mortgage Helper appli
             </form>
 
             <div className="mt-2 text-xs text-gray-500 text-center">
-              {!process.env.NEXT_PUBLIC_GEMINI_API_KEY && !process.env.GEMINI_API_KEY && (
+              {!process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY === 'your_gemini_api_key_here' ? (
                 <p className="text-red-500">⚠️ Gemini API key not configured</p>
-              )}
+              ) : null}
               {!recognitionRef.current && (
                 <p>🎤 Voice recognition not supported in this browser</p>
               )}
